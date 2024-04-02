@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Tracker</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+  }
+  #container {
+    text-align: center;
+  }
+  #student-info {
+    margin-bottom: 20px;
+  }
+  #attendance-list {
+    display: none;
+    margin-top: 20px;
+  }
+  #attendance-list textarea {
+    width: 100%;
+    height: 100px;
+    resize: none;
+    margin-bottom: 10px;
+  }
+  #student-list {
+    text-align: left;
+    margin-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div id="container">
+  <div id="student-info"></div>
+  <button id="presentBtn" onclick="markAttendance('present')">Present</button>
+  <button id="absentBtn" onclick="markAttendance('absent')">Absent</button>
+  <div id="attendance-list">
+    <h2>Attendance List</h2>
+    <textarea id="attendanceTextarea" readonly></textarea>
+    <button onclick="copyAttendanceList()">Copy List 1</button>
+    <h2>Attendance Numeric List</h2>
+    <textarea id="numericTextarea" readonly></textarea>
+    <button onclick="copyNumericList()">Copy List 2</button>
+    <button onclick="editAttendance()">Edit Attendance</button>
+  </div>
+  <div id="student-list"></div>
+</div>
+
+<script>
+  const students = [
+    { name: "Harshita Sharma", enrollmentNumber: "EN21CS301311" },
+    { name: "Harshita Shukla", enrollmentNumber: "EN21CS301312" },
+    { name: "Harshraj Sharma", enrollmentNumber: "EN21CS301313" },
+    { name: "Harshvardhan Chouhan", enrollmentNumber: "EN21CS301314" },
+    { name: "Hatim Bahrainwala", enrollmentNumber: "EN21CS301315" },
+    { name: "Hemani Chauhan", enrollmentNumber: "EN21CS301316" },
+    // Add more students here
+    { name: "Disha Bhange", enrollmentNumber: "EN22CS3L1019" },
+    { name: "Neha Patil", enrollmentNumber: "EN22CS3L1028" },
+    { name: "Shyam Patidar", enrollmentNumber: "EN22CS3L1043" }
+  ];
+
+  let currentIndex = 0;
+  let attendance = [];
+
+  function showStudentInfo() {
+    const student = students[currentIndex];
+    document.getElementById("student-info").innerHTML = `
+      <h1>${student.name}</h1>
+      <p>Enrollment Number: ${student.enrollmentNumber}</p>
+    `;
+  }
+
+  function markAttendance(status) {
+    attendance.push({
+      name: students[currentIndex].name,
+      enrollmentNumber: students[currentIndex].enrollmentNumber,
+      status: status
+    });
+    currentIndex++;
+    if (currentIndex < students.length) {
+      showStudentInfo();
+    } else {
+      showAttendanceList();
+    }
+  }
+
+  function showAttendanceList() {
+    document.getElementById("student-info").style.display = "none";
+    document.getElementById("presentBtn").style.display = "none";
+    document.getElementById("absentBtn").style.display = "none";
+    document.getElementById("attendance-list").style.display = "block";
+    const attendanceTextarea = document.getElementById("attendanceTextarea");
+    const numericTextarea = document.getElementById("numericTextarea");
+    let attendanceList = "";
+    let numericList = "";
+    attendance.forEach(student => {
+      attendanceList += `${student.name} - ${student.enrollmentNumber} - ${student.status}\n`;
+      numericList += `${student.status === 'present' ? '1' : '0'}\n`;
+    });
+    attendanceTextarea.value = attendanceList;
+    numericTextarea.value = numericList;
+  }
+
+  function copyAttendanceList() {
+    const attendanceTextarea = document.getElementById("attendanceTextarea");
+    attendanceTextarea.select();
+    document.execCommand("copy");
+    alert("Attendance list 1 copied to clipboard!");
+  }
+
+  function copyNumericList() {
+    const numericTextarea = document.getElementById("numericTextarea");
+    numericTextarea.select();
+    document.execCommand("copy");
+    alert("Attendance list 2 copied to clipboard!");
+  }
+
+  function editAttendance() {
+    const studentListDiv = document.getElementById("student-list");
+    studentListDiv.innerHTML = "<h2>Edit Attendance</h2>";
+    students.forEach(student => {
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.name = "student";
+      checkbox.value = student.name;
+      const label = document.createElement("label");
+      label.textContent = `${student.name} (${student.enrollmentNumber})`;
+      label.appendChild(checkbox);
+      const attendanceRecord = attendance.find(record => record.name === student.name);
+      if (attendanceRecord) {
+        checkbox.checked = attendanceRecord.status === "present";
+      }
+      studentListDiv.appendChild(label);
+      studentListDiv.appendChild(document.createElement("br"));
+    });
+    const saveButton = document.createElement("button");
+    saveButton.textContent = "Save";
+    saveButton.onclick = saveEditedAttendance;
+    studentListDiv.appendChild(saveButton);
+  }
+
+  function saveEditedAttendance() {
+    const checkboxes = document.querySelectorAll('input[name="student"]');
+    attendance = [];
+    checkboxes.forEach(checkbox => {
+      const studentName = checkbox.value;
+      const student = students.find(s => s.name === studentName);
+      const status = checkbox.checked ? "present" : "absent";
+      attendance.push({
+        name: student.name,
+        enrollmentNumber: student.enrollmentNumber,
+        status: status
+      });
+    });
+    document.getElementById("student-list").innerHTML = "";
+    showAttendanceList();
+  }
+
+  showStudentInfo();
+</script>
+
+</body>
+</html>
